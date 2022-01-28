@@ -1,0 +1,101 @@
+'use strict';
+
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+
+canvas.width = window.innerWidth - 30;
+canvas.height = window.innerHeight - 30;
+
+const mouse = {
+  x: undefined,
+  y: undefined,
+};
+
+const colorArr = ['#131326', '#88DFF2', '#115945', '#BF9663', '#733729'];
+
+window.addEventListener('mousemove', (e) => {
+  mouse.x = e.x;
+  mouse.y = e.y;
+});
+
+window.addEventListener('resize', () => {
+  canvas.width = window.innerWidth - 30;
+  canvas.height = window.innerHeight - 30;
+  init();
+});
+
+class Circle {
+  #maxSize = 40;
+  // #minSize = 2;
+  #color = colorArr[Math.floor(Math.random() * colorArr.length)];
+
+  constructor(x, y, size, dx, dy) {
+    this.x = x;
+    this.y = y;
+    this.size = size;
+    this.minSize = size;
+    this.dx = dx;
+    this.dy = dy;
+  }
+
+  draw() {
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2, false);
+    ctx.fillStyle = this.#color;
+    ctx.fill();
+  }
+
+  update() {
+    if (this.x + this.size > innerWidth || this.x - this.size < 0) {
+      this.dx = -this.dx;
+    }
+
+    if (this.y + this.size > innerHeight || this.y - this.size < 0) {
+      this.dy = -this.dy;
+    }
+    this.x += this.dx;
+    this.y += this.dy;
+
+    // Interactivity
+    if (
+      mouse.x - this.x < 50 &&
+      mouse.x - this.x > -50 &&
+      mouse.y - this.y < 50 &&
+      mouse.y - this.y > -50
+    ) {
+      if (this.size < this.#maxSize) {
+        this.size += 1;
+      }
+    } else if (this.size > this.minSize) {
+      this.size -= 1;
+    }
+
+    this.draw();
+  }
+}
+
+let circleArr = [];
+
+function init() {
+  circleArr = [];
+  for (let i = 0; i < 400; i++) {
+    const size = Math.random() * 3 + 1;
+    const x = Math.random() * (innerWidth - size * 2) + size;
+    const y = Math.random() * (innerHeight - size * 2) + size;
+    const dx = Math.random() - 0.5;
+    const dy = Math.random() - 0.5;
+    circleArr.push(new Circle(x, y, size, dx, dy));
+  }
+}
+
+const animate = function () {
+  requestAnimationFrame(animate);
+  ctx.clearRect(0, 0, innerWidth, innerHeight);
+
+  for (let i = 0; i < circleArr.length; i++) {
+    circleArr[i].update();
+  }
+};
+
+init();
+animate();
